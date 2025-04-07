@@ -3,18 +3,29 @@ import requests
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
+from my_etls.extract.domain.exceptions import RealPythonScrapperException
+from my_etls.extract.domain.requester import Requester
 
-class RealPythonScrapping:
+
+
+class RealPythonScrapper:
+    def __init__(self, requester: Requester):
+        self._requester = requester
+
     def extract(self, url: str) -> pd.DataFrame:
-        scrapped_results = self._extract_job_results_from_page(url)
+        try:
+            scrapped_results = self._extract_job_results_from_page(url)
 
-        job_results = self._transform_html_results_to_dataset(scrapped_results)
+            job_results = self._transform_html_results_to_dataset(scrapped_results)
 
-        return job_results
+            return job_results
+        except Exception as ex:
+            message = f"Error on get request for {url}"
+            raise RealPythonScrapperException(message) from ex
 
-    @staticmethod
-    def _extract_job_results_from_page(url: str) -> Tag:
-        page = requests.get(url)
+
+    def _extract_job_results_from_page(self, url: str) -> Tag:
+        page = self._requester.get(url)
 
         soup = BeautifulSoup(page.content, "html.parser")
 

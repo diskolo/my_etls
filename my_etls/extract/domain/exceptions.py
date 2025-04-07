@@ -1,0 +1,2 @@
+class RealPythonScrapperException(Exception):
+    pass
